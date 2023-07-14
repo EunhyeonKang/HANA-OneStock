@@ -16,7 +16,7 @@ public interface MemberService {
     boolean updateMember(Member m);
     int deleteMember(String id);
     Member loginMember(HashMap<String, String> loginData);
-    int selectNameAndEmailOfMember(HashMap<String, String> kakaoLogin);
+    Member selectNameAndEmailOfMember(HashMap<String, String> kakaoLogin);
     void insertMember(Member member);
     Member selectNameOfMember(String id);
     void insertInvestInfo(Member member);

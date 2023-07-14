@@ -1,5 +1,6 @@
 package com.hanaonestock.member.controller;
 
+import com.hanaonestock.member.model.dto.Member;
 import com.hanaonestock.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -18,13 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/oauth")
 public class KakaoOAuth2Controller {
     private final MemberService memberService;
     @Autowired
     public KakaoOAuth2Controller(MemberService memberService) {this.memberService = memberService;}
 
-    @GetMapping("/loginInfo")
+    @GetMapping("/oauth/loginInfo")
     //현재 사용자의 인증 정보를 나타내며, 주로 사용자가 인증되었는지 확인하거나 사용자의 권한을 확인하는 데 사용
     public ModelAndView getJson(Authentication authentication, HttpServletRequest request) {
         ModelAndView mav = new ModelAndView();
@@ -41,24 +41,23 @@ public class KakaoOAuth2Controller {
 
         kakaoLogin.put("name",name);
         kakaoLogin.put("email",email);
-
-        if(memberService.selectNameAndEmailOfMember(kakaoLogin)==0){
-            mav.addObject("message", "가입이 필요합니다.");
+        Member memberResult = memberService.selectNameAndEmailOfMember(kakaoLogin);
+        if(memberResult!=null){
+            mav.addObject("msg", "로그인 성공");
+            mav.addObject("loc", "/");
+            mav.setViewName("/common/message");
+        }else {
             mav.addObject("name", name);
             mav.addObject("email", email);
             mav.addObject("provider",provider);
             mav.setViewName("join");
-        }else {
-            mav.addObject("msg", "이미 가입된 회원입니다.");
-            mav.addObject("loc", "/");
-            mav.setViewName("/common/message");
         }
-
-        session.setAttribute("name", name);
+        session.setAttribute("id", memberResult.getId());
+        session.setAttribute("provider", memberResult.getProvider() );
         return mav;
     }
 
-    @GetMapping("/logout")
+    @GetMapping("/oauth/logout")
     public String logout(HttpServletRequest request, Authentication authentication) {
 
         if (authentication != null && authentication.isAuthenticated()) {
